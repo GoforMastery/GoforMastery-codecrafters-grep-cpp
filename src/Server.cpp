@@ -19,6 +19,18 @@ bool findWord(const string &input_line) {
   }
   return false;
 }
+bool foundBraces(const string &input_line, const string &pattern) {
+  unordered_map<char, int> mp;
+  for (int i = 1; i < pattern.size() - 1; ++i) {
+    mp[pattern[i]]++;
+  }
+  for (int j = 0; j < input_line.size(); ++j) {
+    if (mp.find(input_line[j]) != mp.end()) {
+      return true;
+    }
+  }
+  return false;
+}
 bool match_pattern(const std::string &input_line, const std::string &pattern) {
   if (pattern.length() == 1) {
     return input_line.find(pattern) != std::string::npos;
@@ -26,6 +38,8 @@ bool match_pattern(const std::string &input_line, const std::string &pattern) {
     return found(input_line);
   } else if (pattern == "\\w") {
     return findWord(input_line);
+  } else if (pattern[0] == '[' && pattern.back() == ']') {
+    return foundBraces(input_line, pattern);
   } else {
     throw std::runtime_error("Unhandled pattern " + pattern);
   }
