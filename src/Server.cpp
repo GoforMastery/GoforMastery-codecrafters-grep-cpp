@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include <cctype>
+#include <regex>
 
 using namespace std;
 
@@ -89,8 +90,10 @@ bool containsThis(const string &pattern) {
   }
   return false;
 }
-bool findAnchor(const string &pattern) { return pattern[0] == '^'; }
-bool startofString(const string &input_line, const string &pattern) {
+bool findAnchor(const string &pattern) {
+  return pattern[0] == '^' && pattern.back() != '$';
+}
+bool onlystartofString(const string &input_line, const string &pattern) {
   int ps = pattern.size();
   if (input_line.size() < ps) {
     return false;
@@ -106,6 +109,28 @@ bool startofString(const string &input_line, const string &pattern) {
   }
   return true;
 }
+bool findDollar(const string &pattern) {
+  return pattern.back() == '$' && pattern[0] != '^';
+}
+bool onlyendofString(const string &input_line, const string &pattern) {
+  int i = input_line.size() - 1, j = pattern.size() - 2;
+  while (i >= 0 && j >= 0) {
+    if (input_line[i] != pattern[j]) {
+      return false;
+    } else {
+      i--;
+      j--;
+    }
+  }
+  return true;
+}
+bool foundDollarAnchor(const string &pattern) {
+  return pattern[0] == '^' && pattern.back() == '$';
+}
+bool startandendofString(const string &input_line, const string &pattern) {
+  string inter = pattern.substr(1, pattern.size() - 2);
+  return input_line == inter;
+}
 bool match_pattern(const std::string &input_line, const std::string &pattern) {
   if (pattern.length() == 1) {
     return input_line.find(pattern) != std::string::npos;
@@ -120,7 +145,11 @@ bool match_pattern(const std::string &input_line, const std::string &pattern) {
   } else if (containsThis(pattern)) {
     return findthem(input_line, pattern);
   } else if (findAnchor(pattern)) {
-    return startofString(input_line, pattern);
+    return onlystartofString(input_line, pattern);
+  } else if (findDollar(pattern)) {
+    return onlyendofString(input_line, pattern);
+  } else if (foundDollarAnchor(pattern)) {
+    return startandendofString(input_line, pattern);
   } else {
     throw std::runtime_error("Unhandled pattern " + pattern);
   }
