@@ -1,9 +1,4 @@
-#include <algorithm>
 #include <bits/stdc++.h>
-#include <cctype>
-#include <climits>
-#include <regex>
-
 using namespace std;
 
 bool isDigit(const char &ch) { return isdigit(static_cast<unsigned char>(ch)); }
@@ -164,6 +159,62 @@ bool handleMultiple(const string &input_line, const string &pattern) {
   }
   return i == -1;
 }
+bool foundQuestion(const string &pattern) {
+  for (const char c : pattern) {
+    if (c == '?') {
+      return true;
+    }
+  }
+  return false;
+}
+vector<int> zAlgo(string &g) {
+  int gs = g.size();
+  int l = 0, r = 0;
+  vector<int> z(gs);
+  for (int i = 1; i < gs; ++i) {
+    if (i < r) {
+      z[i] = min(z[i - l], r - i);
+    }
+    while (i + z[i] < gs && g[z[i]] == g[i + z[i]]) {
+      z[i]++;
+    }
+    if (i + z[i] > r) {
+      l = i;
+      r = i + z[i];
+    }
+  }
+  return z;
+}
+bool handleQuestionFromStart(const string &input_line, const string &pattern) {
+  string F = "", S = "";
+  int i = 0;
+  while (i < pattern.size()) {
+    if (i + 1 < pattern.size() && pattern[i + 1] == '?') {
+      F += pattern[i];
+      i += 2;
+    } else {
+      F += pattern[i];
+      S += pattern[i];
+      i++;
+    }
+  }
+  int fs = F.size(), ss = S.size();
+  /*goal is to find F in input_line, S in input_line.*/
+  string newF = F + '$' + input_line;
+  string newS = S + '$' + input_line;
+  auto zF = zAlgo(newF), zS = zAlgo(newS);
+  for (int e : zF) {
+    if (e == fs) {
+      return true;
+    }
+  }
+  for (int e : zS) {
+    if (e == ss) {
+      return true;
+    }
+  }
+  return false;
+}
 bool match_pattern(const std::string &input_line, const std::string &pattern) {
   if (pattern.length() == 1) {
     return input_line.find(pattern) != std::string::npos;
@@ -185,6 +236,8 @@ bool match_pattern(const std::string &input_line, const std::string &pattern) {
     return startandendofString(input_line, pattern);
   } else if (foundPlus(pattern)) {
     return handleMultiple(input_line, pattern);
+  } else if (foundQuestion(pattern)) {
+    return handleQuestionFromStart(input_line, pattern);
   } else {
     throw std::runtime_error("Unhandled pattern " + pattern);
   }
