@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <bits/stdc++.h>
 #include <cctype>
+#include <climits>
 #include <regex>
 
 using namespace std;
@@ -131,6 +133,37 @@ bool startandendofString(const string &input_line, const string &pattern) {
   string inter = pattern.substr(1, pattern.size() - 2);
   return input_line == inter;
 }
+bool foundPlus(const string &pattern) {
+  for (const char ch : pattern) {
+    if (ch == '+') {
+      return true;
+    }
+  }
+  return false;
+}
+bool handleMultiple(const string &input_line, const string &pattern) {
+  int i = pattern.size() - 1, j = input_line.size() - 1;
+  while (j >= 0) {
+    if (input_line[j] == pattern[i]) {
+      i--, j--;
+    } else if (pattern[i] == '+') {
+      i--;
+      char req = pattern[i];
+      while (input_line[j] == req && j >= 0) {
+        j--;
+      }
+      i--;
+      if (input_line[j] == pattern[i]) {
+        i--, j--;
+      } else {
+        i = pattern.size() - 1, j--;
+      }
+    } else if (input_line[j] != pattern[i]) {
+      i = pattern.size() - 1, j--;
+    }
+  }
+  return i == -1;
+}
 bool match_pattern(const std::string &input_line, const std::string &pattern) {
   if (pattern.length() == 1) {
     return input_line.find(pattern) != std::string::npos;
@@ -150,6 +183,8 @@ bool match_pattern(const std::string &input_line, const std::string &pattern) {
     return onlyendofString(input_line, pattern);
   } else if (foundDollarAnchor(pattern)) {
     return startandendofString(input_line, pattern);
+  } else if (foundPlus(pattern)) {
+    return handleMultiple(input_line, pattern);
   } else {
     throw std::runtime_error("Unhandled pattern " + pattern);
   }
