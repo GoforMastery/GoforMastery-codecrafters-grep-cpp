@@ -1,8 +1,9 @@
 #include <bits/stdc++.h>
+#include <cctype>
 
 using namespace std;
 
-bool isDigit(char &ch) { return isdigit(static_cast<unsigned char>(ch)); }
+bool isDigit(const char &ch) { return isdigit(static_cast<unsigned char>(ch)); }
 bool found(const string &input_line) {
   for (char ch : input_line) {
     if (isDigit(ch)) {
@@ -11,6 +12,7 @@ bool found(const string &input_line) {
   }
   return false;
 }
+bool isAlpha(const char &ch) { return isalpha(static_cast<unsigned char>(ch)); }
 bool findWord(const string &input_line) {
   for (char ch : input_line) {
     if (isalnum(ch) || ch == '_') {
@@ -43,6 +45,48 @@ bool foundNegativecharGroups(const string &input_line, const string &pattern) {
   }
   return false;
 }
+bool findthem(const string &input_line, const string &pattern) {
+  int ps = pattern.size();
+  int i = 0, j = 0;
+  while (j < input_line.size()) {
+    if (i < ps && isDigit(input_line[j]) && pattern[i] == '\\' && pattern[i + 1] == 'd') {
+      i += 2;
+      if (i == ps) {
+        return true;
+      }
+    } else if (i < ps && isAlpha(input_line[j]) && pattern[i] == '\\' && pattern[i + 1] == 'w') {
+      i += 2;
+      if (i == ps) {
+        return true;
+      }
+    } else if (i < ps && input_line[j] == ' ' && pattern[i] == ' ') {
+      i++;
+      if (i == ps) {
+        return true;
+      }
+    } else if (i < ps && input_line[j] == pattern[i]) {
+      /*forgot this case*/
+      i++;
+      if (i == ps) {
+        return true;
+      }
+    } else {
+      i = 0;
+    }
+    j++;
+  }
+  return false;
+}
+bool containsThis(const string &pattern) {
+  for (int i = 0; i < pattern.size(); ++i) {
+    if (pattern[i] == '\\' && pattern[i + 1] == 'w') {
+      return true;
+    } else if (pattern[i] == '\\' && pattern[i + 1] == 'd') {
+      return true;
+    }
+  }
+  return false;
+}
 bool match_pattern(const std::string &input_line, const std::string &pattern) {
   if (pattern.length() == 1) {
     return input_line.find(pattern) != std::string::npos;
@@ -54,6 +98,8 @@ bool match_pattern(const std::string &input_line, const std::string &pattern) {
     return foundBraces(input_line, pattern);
   } else if (pattern[0] == '[' && pattern.back() == ']' && pattern[1] == '^') {
     return foundNegativecharGroups(input_line, pattern);
+  } else if (containsThis(pattern)) {
+    return findthem(input_line, pattern);
   } else {
     throw std::runtime_error("Unhandled pattern " + pattern);
   }
