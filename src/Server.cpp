@@ -128,13 +128,20 @@ bool startandendofString(const string &input_line, const string &pattern) {
   string inter = pattern.substr(1, pattern.size() - 2);
   return input_line == inter;
 }
-bool foundPlus(const string &pattern) {
+bool foundonlyPlus(const string &pattern) {
+  bool plus = false, dot = false;
   for (const char ch : pattern) {
     if (ch == '+') {
-      return true;
+      plus = true;
+    }
+    if (ch == '.') {
+      dot = true;
     }
   }
-  return false;
+  if (plus && dot) {
+    return false;
+  }
+  return plus;
 }
 bool handleMultiple(const string &input_line, const string &pattern) {
   int i = pattern.size() - 1, j = input_line.size() - 1;
@@ -215,6 +222,85 @@ bool handleQuestionFromStart(const string &input_line, const string &pattern) {
   }
   return false;
 }
+bool foundonlyDot(const string &pattern) {
+  bool dot = false, plus = false;
+  for (const char c : pattern) {
+    if (c == '+') {
+      plus = true;
+    }
+    if (c == '.') {
+      dot = true;
+    }
+  }
+  if (dot && plus) {
+    return false;
+  }
+  return dot;
+}
+bool foundDotPlus(const string &pattern) {
+  int i = 0, j = 0;
+  while (j < pattern.size()) {
+    if (j - i + 1 < 2) {
+      j++;
+    } else if (j - i + 1 == 2) {
+      if (pattern[i] == '.' && pattern[i + 1] == '+') {
+        return true;
+      }
+      i++;
+      j++;
+    }
+  }
+  return false;
+}
+bool handleonlyDot(const string &input_line, const string &pattern) {
+  int is = input_line.size(), ps = pattern.size();
+  if (is != ps) {
+    return false;
+  }
+  for (int i = 0; i < is; ++i) {
+    if (pattern[i] == '.') {
+      if (!isalnum(input_line[i])) {
+        return false;
+      }
+    } else if (pattern[i] != input_line[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+bool handleDotPlus(const string &input_line, const string &pattern) {
+  int i = 0, j = 0, ps = pattern.size();
+  if (input_line.size() < ps - 1) {
+    return false;
+  }
+  int prevIdx = -1, afterIdx = -1;
+  while (j < ps) {
+    if (j - i + 1 < 2) {
+      j++;
+    } else if (j - i + 1 == 2) {
+      if (pattern[i] == '.' && pattern[j] == '+') {
+        prevIdx = i, afterIdx = j;
+        break;
+      }
+      i++;
+      j++;
+    }
+  }
+  int endDist = ps - afterIdx - 1;
+  for (int k = 0; k < prevIdx; ++k) {
+    if (pattern[k] != input_line[k]) {
+      return false;
+    }
+  }
+  int last = input_line.size() - 1;
+  for (int k = ps - 1; k >= ps - endDist; --k) {
+    if (pattern[k] != input_line[last]) {
+      return false;
+    }
+    last--;
+  }
+  return true;
+}
 bool match_pattern(const std::string &input_line, const std::string &pattern) {
   if (pattern.length() == 1) {
     return input_line.find(pattern) != std::string::npos;
@@ -234,10 +320,14 @@ bool match_pattern(const std::string &input_line, const std::string &pattern) {
     return onlyendofString(input_line, pattern);
   } else if (foundDollarAnchor(pattern)) {
     return startandendofString(input_line, pattern);
-  } else if (foundPlus(pattern)) {
+  } else if (foundonlyPlus(pattern)) {
     return handleMultiple(input_line, pattern);
   } else if (foundQuestion(pattern)) {
     return handleQuestionFromStart(input_line, pattern);
+  } else if (foundonlyDot(pattern)) {
+    return handleonlyDot(input_line, pattern);
+  } else if (foundDotPlus(pattern)) {
+    return handleDotPlus(input_line, pattern);
   } else {
     throw std::runtime_error("Unhandled pattern " + pattern);
   }
