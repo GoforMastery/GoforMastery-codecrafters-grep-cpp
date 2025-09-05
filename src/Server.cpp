@@ -49,12 +49,14 @@ bool findthem(const string &input_line, const string &pattern) {
   int ps = pattern.size();
   int i = 0, j = 0;
   while (j < input_line.size()) {
-    if (i < ps && isDigit(input_line[j]) && pattern[i] == '\\' && pattern[i + 1] == 'd') {
+    if (i < ps && isDigit(input_line[j]) && pattern[i] == '\\' &&
+        pattern[i + 1] == 'd') {
       i += 2;
       if (i == ps) {
         return true;
       }
-    } else if (i < ps && isAlpha(input_line[j]) && pattern[i] == '\\' && pattern[i + 1] == 'w') {
+    } else if (i < ps && isAlpha(input_line[j]) && pattern[i] == '\\' &&
+               pattern[i + 1] == 'w') {
       i += 2;
       if (i == ps) {
         return true;
@@ -87,6 +89,23 @@ bool containsThis(const string &pattern) {
   }
   return false;
 }
+bool findAnchor(const string &pattern) { return pattern[0] == '^'; }
+bool startofString(const string &input_line, const string &pattern) {
+  int ps = pattern.size();
+  if (input_line.size() < ps) {
+    return false;
+  }
+  int i = 0, j = 1;
+  while (j < ps && i < input_line.size()) {
+    if (pattern[j] != input_line[i]) {
+      return false;
+    } else {
+      i++;
+      j++;
+    }
+  }
+  return true;
+}
 bool match_pattern(const std::string &input_line, const std::string &pattern) {
   if (pattern.length() == 1) {
     return input_line.find(pattern) != std::string::npos;
@@ -100,6 +119,8 @@ bool match_pattern(const std::string &input_line, const std::string &pattern) {
     return foundNegativecharGroups(input_line, pattern);
   } else if (containsThis(pattern)) {
     return findthem(input_line, pattern);
+  } else if (findAnchor(pattern)) {
+    return startofString(input_line, pattern);
   } else {
     throw std::runtime_error("Unhandled pattern " + pattern);
   }
